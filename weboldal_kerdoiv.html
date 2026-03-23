@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weboldal fejlesztési kérdőív</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0d0f;--surface:#141416;--surface2:#1c1c1f;--border:rgba(255,255,255,0.08);--border-h:rgba(255,255,255,0.18);--accent:#6ee7b7;--accent2:#3b82f6;--accent-dim:rgba(110,231,183,0.1);--text:#f0f0f0;--text2:#9ca3af;--text3:#6b7280;--r:16px;--rs:10px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 10%,rgba(110,231,183,0.06) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 80% 80%,rgba(59,130,246,0.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+.shell{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:48px 24px 80px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* Header */
+.header{text-align:center;margin-bottom:52px;animation:fadeUp .6s ease both}
+.brand{font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:8px}
+.dot{width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent)}
+h1{font-family:'DM Serif Display',serif;font-size:clamp(26px,5vw,40px);font-weight:400;line-height:1.2;margin-bottom:12px}
+.subtitle{font-size:15px;color:var(--text2);line-height:1.7;max-width:460px;margin:0 auto}
+
+/* Progress */
+.progress-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:36px;animation:fadeUp .6s .1s ease both}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.progress-label{font-size:13px;color:var(--text2);font-weight:500}
+.progress-count{font-size:13px;color:var(--text3)}
+.progress-count span{color:var(--accent);font-weight:600}
+.bar-bg{height:3px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);width:0%}
+.pills{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.pill{font-size:11px;padding:4px 10px;border-radius:99px;border:1px solid var(--border);color:var(--text3);transition:all .3s;white-space:nowrap;cursor:default}
+.pill.active{color:var(--accent);border-color:rgba(110,231,183,.4);background:var(--accent-dim)}
+.pill.done{color:rgba(110,231,183,.4);border-color:rgba(110,231,183,.2)}
+
+/* Card */
+.qcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:36px;display:none}
+.qcard.active{display:block;animation:slideIn .4s cubic-bezier(.4,0,.2,1) both}
+.q-meta{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.sec-tag{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:4px 10px;border-radius:99px;border:1px solid}
+.q-num{font-size:12px;color:var(--text3);margin-left:auto}
+.q-text{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;line-height:1.4;color:var(--text);margin-bottom:6px}
+.opt-lbl{font-size:13px;font-style:italic;color:var(--text3);margin-bottom:4px}
+.q-helper{font-size:13px;color:var(--text3);margin-bottom:22px;margin-top:10px;padding:10px 14px;border-left:2px solid var(--accent);background:rgba(255,255,255,.025);border-radius:0 var(--rs) var(--rs) 0;line-height:1.6}
+
+/* Options */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:14px;padding:13px 16px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:border-color .2s,transform .15s,background .2s;user-select:none}
+.opt:hover{border-color:var(--border-h);transform:translateX(3px)}
+.opt.sel{border-color:var(--accent);background:var(--accent-dim)}
+.ico{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-h);flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.opt.multi .ico{border-radius:5px}
+.opt.sel .ico{background:var(--accent);border-color:var(--accent)}
+.opt.sel .ico::after{content:'';display:block;width:7px;height:7px;background:#0d0d0f;border-radius:50%}
+.opt.multi.sel .ico::after{width:10px;height:7px;background:transparent;border-radius:0;border-left:2px solid #0d0d0f;border-bottom:2px solid #0d0d0f;transform:rotate(-45deg) translate(1px,-1px)}
+.opt-text{font-size:14px;color:var(--text);line-height:1.4}
+.opt.sel .opt-text{color:var(--accent);font-weight:500}
+.multi-hint{font-size:12px;color:var(--text3);margin-top:8px}
+
+/* Inputs */
+.tinput,.tarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:13px 16px;outline:none;transition:border-color .2s;line-height:1.6}
+.tinput{min-height:46px;resize:none}
+.tarea{min-height:80px;resize:vertical}
+.tinput:focus,.tarea:focus{border-color:var(--accent)}
+.tinput::placeholder,.tarea::placeholder{color:var(--text3)}
+.other-wrap{margin-top:8px;display:none}
+.other-wrap.show{display:block}
+.other-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 14px;outline:none;transition:border-color .2s}
+.other-input:focus{border-color:var(--accent)}
+
+/* Nav */
+.nav{display:flex;gap:10px;margin-top:28px;align-items:center}
+.btn-back{padding:12px 22px;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-back:hover{border-color:var(--border-h);color:var(--text)}
+.btn-next{padding:12px 28px;background:var(--accent);color:#0d0d0f;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn-next:hover{background:#a7f3d0;transform:translateX(2px)}
+.btn-next:disabled{background:var(--surface2);color:var(--text3);cursor:not-allowed;transform:none}
+.btn-next svg{transition:transform .2s}
+.btn-next:hover:not(:disabled) svg{transform:translateX(3px)}
+
+/* Summary */
+#sum-screen{display:none;animation:fadeUp .5s ease both}
+.sum-hero{text-align:center;padding:40px 0 36px}
+.sum-check{width:68px;height:68px;background:var(--accent-dim);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.sum-hero h2{font-family:'DM Serif Display',serif;font-size:30px;font-weight:400;margin-bottom:8px}
+.sum-hero p{font-size:14px;color:var(--text2)}
+.sum-secs{display:flex;flex-direction:column;gap:14px}
+.sum-sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.sum-sec-hdr{padding:13px 20px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.sum-dot{width:7px;height:7px;border-radius:50%}
+.sum-row{padding:12px 20px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1.3fr;gap:14px;align-items:start}
+.sum-row:last-child{border-bottom:none}
+.sum-q{font-size:12px;color:var(--text3);line-height:1.5}
+.sum-a{font-size:13px;color:var(--text);line-height:1.5}
+.sum-a.empty{color:var(--text3);font-style:italic}
+.export-box{margin-top:28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;text-align:center}
+.export-box h3{font-size:16px;font-weight:500;margin-bottom:8px}
+.export-box p{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.export-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-exp{padding:11px 26px;background:var(--accent);color:#0d0d0f;border:none;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-exp:hover{background:#a7f3d0}
+.btn-exp.sec{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-exp.sec:hover{border-color:var(--border-h);color:var(--text)}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--accent);color:#0d0d0f;padding:9px 22px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:600px){.shell{padding:28px 14px 60px}.qcard{padding:24px 18px}.sum-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="header">
+    <div class="brand"><span class="dot"></span>Weboldal fejlesztés</div>
+    <h1>Mesélje el vállalkozását</h1>
+    <p class="subtitle">Néhány egyszerű kérdés — és pontosan olyan weboldalt készítünk, ami az Ön céljait szolgálja.</p>
+  </div>
+
+  <div class="progress-wrap" id="prog-wrap">
+    <div class="progress-top">
+      <span class="progress-label">Haladás</span>
+      <span class="progress-count"><span id="cn">1</span> / <span id="tn"></span> kérdés</span>
+    </div>
+    <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+    <div class="pills" id="pills"></div>
+  </div>
+
+  <div id="qwrap"></div>
+  <div id="sum-screen"></div>
+</div>
+<div class="toast" id="toast">Vágólapra másolva!</div>
+
+<script>
+const SECS=[
+  {id:"alap",   lbl:"Alapadatok",   c:"#6ee7b7",tb:"rgba(110,231,183,.1)",tbr:"rgba(110,231,183,.35)",tc:"#6ee7b7"},
+  {id:"cel",    lbl:"Cél & Típus",  c:"#38bdf8",tb:"rgba(56,189,248,.1)", tbr:"rgba(56,189,248,.35)", tc:"#38bdf8"},
+  {id:"tart",   lbl:"Tartalom",     c:"#a78bfa",tb:"rgba(167,139,250,.1)",tbr:"rgba(167,139,250,.35)",tc:"#a78bfa"},
+  {id:"popup",  lbl:"Pop-up",       c:"#fb7185",tb:"rgba(251,113,133,.1)",tbr:"rgba(251,113,133,.35)",tc:"#fb7185"},
+  {id:"admin",  lbl:"Admin & CMS",  c:"#fbbf24",tb:"rgba(251,191,36,.1)", tbr:"rgba(251,191,36,.35)", tc:"#fbbf24"},
+  {id:"design", lbl:"Design",       c:"#f97316",tb:"rgba(249,115,22,.1)", tbr:"rgba(249,115,22,.35)", tc:"#f97316"},
+  {id:"ads",    lbl:"Google & AI",  c:"#34d399",tb:"rgba(52,211,153,.1)", tbr:"rgba(52,211,153,.35)", tc:"#34d399"},
+  {id:"verseny",lbl:"Versenyelőny", c:"#e879f9",tb:"rgba(232,121,249,.1)",tbr:"rgba(232,121,249,.35)",tc:"#e879f9"},
+  {id:"tech",   lbl:"Technikai",    c:"#60a5fa",tb:"rgba(96,165,250,.1)", tbr:"rgba(96,165,250,.35)", tc:"#60a5fa"},
+];
+
+const QS=[
+  {id:"q1", s:"alap",  t:"text",     q:"Mi a cége / vállalkozása neve?",                         ph:"Pl.: Kovács és Társa Kft."},
+  {id:"q2", s:"alap",  t:"text",     q:"Milyen iparágban / tevékenységi körben dolgozik?",        ph:"Pl.: fodrászat, ügyvédi iroda, e-commerce..."},
+  {id:"q3", s:"alap",  t:"area",     q:"Mit csinál a vállalkozása, és mi különbözteti meg a versenytársaktól?", ph:"Pl.: 10 éve foglalkozunk X-szel, és mi az egyetlen, aki Y-t is biztosít..."},
+  {id:"q4", s:"alap",  t:"area",     q:"Kik az ideális ügyfelei?",                                ph:"Életkor, foglalkozás, érdeklődés, fájdalompontok..."},
+  {id:"q5", s:"cel",   t:"radio",    q:"Milyen típusú weboldalt szeretne?",                       opts:["Bemutatkozó / céges oldal","Webshop (online értékesítés)","Landing page (egy konkrét ajánlat)","Blog / portfólió","Foglalási rendszer / időpontfoglaló","Egyéb"],other:"Egyéb"},
+  {id:"q6", s:"cel",   t:"multi",    q:"Mi a weboldal legfontosabb célja?",                       hint:"Több is megjelölhető",opts:["Ügyfelek / leadek szerzése","Termékek / szolgáltatások eladása","Márkaimázs és ismertség növelése","Meglévő ügyfelek kiszolgálása","Információnyújtás / edukáció"]},
+  {id:"q7", s:"cel",   t:"radio",    q:"Van-e már meglévő weboldala?",                            opts:["Igen, és megmutatom (URL alább)","Igen, de teljesen újat szeretnék","Nincs weboldalam még"]},
+  {id:"q8", s:"cel",   t:"area",     q:"Ha van meglévő oldala, írja be az URL-t és mit változtatna.",opt:true,ph:"https://... — Pl.: elavult a design, lassú az oldal..."},
+  {id:"q9", s:"tart",  t:"multi",    q:"Milyen aloldalakat képzel el?",                           hint:"Több is megjelölhető",opts:["Főoldal","Rólunk","Szolgáltatások / termékek","Árak / csomagok","Blog / hírek","Referenciák / portfólió","Kapcsolat / ajánlatkérés","GYIK","Egyéb"],other:"Egyéb"},
+  {id:"q10",s:"tart",  t:"multi",    q:"Milyen speciális funkciókat igényel?",                    hint:"Több is megjelölhető",opts:["Kapcsolati / ajánlatkérő űrlap","Online időpontfoglalás","Online fizetés","Hírlevél feliratkozás","Élő chat / chatbot","Térkép / útvonaltervező","Galéria / képnézegető","Videó integráció","Közösségi média integráció","Ügyfélvélemények megjelenítése","Egyéb"],other:"Egyéb"},
+  {id:"q11",s:"tart",  t:"radio",    q:"Van-e már elkészített szöveg / tartalom az oldalhoz?",   opts:["Igen, minden szöveg megvan","Részben van kész tartalom","Nem, a szövegírásra is szükségem van"]},
+  {id:"q12",s:"popup", t:"radio",    q:"Szeretne-e pop-up ablakokat az oldalon?",                 help:"A jól tervezett pop-up eszközök 20–40%-kal is növelhetik az érdeklődők számát.",opts:["Igen, kérek egyet vagy többet","Nem, nem kérek pop-up ablakot","Még nem döntöttem, javaslat kell"]},
+  {id:"q13",s:"popup", t:"multi",    q:"Melyik pop-up / interaktív eszköz illik az oldalához?",  hint:"Több is megjelölhető",opts:["Összehasonlító elemzés (csomagok, termékek összevetése)","Kérdőív / kvíz (személyre szabott ajánlat)","Kalkulátor (ár-, megtakarítás- vagy ROI-számító)","Időpont foglaló (beépített naptár)","Lead mágnes / ingyenes anyag letöltés","Kilépési szándék pop-up (utolsó ajánlat)","Ingyenes konzultáció kérés (mini-form)","Hírlevél / értesítő feliratkozás","Visszaszámláló / időkorlát","Chatbot / AI asszisztens","Vélemény / Google értékelés gyűjtő","GDPR / süti értesítő","Forgó szerencsekerék / játék","Videó pop-up"]},
+  {id:"q14",s:"popup", t:"multi",    q:"Mikor jelenjen meg a pop-up?",                           hint:"Több is megjelölhető",opts:["Azonnal, belépéskor (pl. 3 mp után)","Görgetés után (az oldal 50%-ánál)","Kilépési szándék esetén","Egy gombra kattintva","Csak meghatározott oldalon","Visszatérő látogatóknak ne jelenjen meg újra"]},
+  {id:"q15",s:"popup", t:"area",     q:"Mit kínáljon a pop-up a látogatónak?",                   opt:true,ph:"Pl.: ingyenes konzultáció, 10% kedvezmény az első rendelésre, PDF útmutató..."},
+  {id:"q16",s:"admin", t:"radio",    q:"Szeretne-e admin felületet az oldal önálló kezeléséhez?",opts:["Igen, önállóan szeretném kezelni","Nem, a frissítéseket kiszervezi","Még nem tudom"]},
+  {id:"q17",s:"admin", t:"radio",    q:"Melyik CMS rendszert / vizuális oldalépítőt részesíti előnyben?",opts:["WordPress + Elementor","WordPress + Divi sablon","Webflow (vizuális, kód nélküli)","Wix (drag & drop)","Shopify (webshophoz)","Teljesen egyedi fejlesztés (nincs CMS)","Nincs preferencia, fejlesztő döntsön","Egyéb"],other:"Egyéb"},
+  {id:"q18",s:"admin", t:"area",     q:"Van-e preferált sablon vagy weboldal, amelynek stílusát szereti?",opt:true,ph:"URL-ek és miért tetszik az adott oldal stílusa..."},
+  {id:"q19",s:"design",t:"radio",    q:"Van-e már meglévő arculata? (logó, szín, betűtípus)",   opts:["Igen, teljes arculat van","Részben (pl. csak logó)","Nincs, ezt is kérem"]},
+  {id:"q20",s:"design",t:"multi",    q:"Milyen hangulatot sugározzon az oldal?",                  hint:"Több is megjelölhető",opts:["Professzionális, komoly","Modern, letisztult","Barátságos, közvetlen","Luxus, prémium","Játékos, kreatív","Természetes, organikus","Technológiai, innovatív"]},
+  {id:"q21",s:"design",t:"radio",    q:"Milyen színvilágot képzel el?",                           opts:["Sötét téma (dark mode)","Világos téma (light mode)","Vegyes / brandszínekhez igazodó","Nincs preferencia"]},
+  {id:"q22",s:"design",t:"area",     q:"Vannak-e kerülendő színek, stílusok?",                   opt:true,ph:"Pl.: ne legyen sárga, kerüljük a zsúfolt elrendezést..."},
+  {id:"q23",s:"ads",   t:"radio",    q:"Tervez-e Google Ads hirdetéseket futtatni az oldalhoz?",  help:"Ha igen, a landing page-eket a Quality Score maximalizálására és alacsonyabb CPC-re tervezzük.",opts:["Igen, ez elsődleges prioritás","Igen, a jövőben tervezzük","Nem tervezzük"]},
+  {id:"q24",s:"ads",   t:"area",     q:"Milyen kulcsszavakra szeretne megjelenni a Google-ben?", opt:true,ph:"Pl.: fodrász Budapest XIII. kerület, hajfestés olcsón..."},
+  {id:"q25",s:"ads",   t:"radio",    q:"Kér-e Google Ads-optimalizált oldalszerkezetet?",         help:"Konverzióra fókuszált CTA-k, trust jelek, A/B tesztelhetőség.",opts:["Igen, maximálisan optimalizálva","Alapszintű optimalizálás elég","Nem szükséges"]},
+  {id:"q26",s:"ads",   t:"multi",    q:"Kér-e AI-kompatibilis struktúrát az oldalba?",            hint:"Több is megjelölhető",opts:["Strukturált adatok (Schema.org) — Google AI Overview megjelenéshez","FAQ szekció (AI-alapú keresők előnyben részesítik)","AI chatbot integráció az oldalba","Automatikus tartalom-frissítés / AI szövegszerkesztő","Nem kérek AI-specifikus megoldásokat"]},
+  {id:"q27",s:"verseny",t:"radio",   q:"Kér-e versenyelőny-elemzést és javaslatok beépítését?",  opts:["Igen — elemezze a konkurenciát és javasoljon differenciáló elemeket","Részben — csak az üzenetezésnél legyen figyelembe véve","Nem szükséges"]},
+  {id:"q28",s:"verseny",t:"area",    q:"Kik a fő versenytársai? (URL-ekkel, ha tudja)",           opt:true,ph:"Pl.: konkurens1.hu, konkurens2.hu..."},
+  {id:"q29",s:"verseny",t:"area",    q:"Miben jobb Ön a versenytársainál?",                       ph:"Pl.: gyorsabb szállítás, személyesebb kiszolgálás, egyedi termék..."},
+  {id:"q30",s:"tech",  t:"radio",    q:"Van-e már domain neve?",                                  opts:["Igen, megvan a domain","Nem, segítség kell a domain választáshoz","Nem tudom, mi az a domain"]},
+  {id:"q31",s:"tech",  t:"text",     q:"Ha igen, mi a domain neve?",                              opt:true,ph:"Pl.: cegem.hu"},
+  {id:"q32",s:"tech",  t:"radio",    q:"Van-e már tárhelye (hosting)?",                           opts:["Igen","Nem","Nem tudom, mi az a tárhely"]},
+  {id:"q33",s:"tech",  t:"radio",    q:"Mikor kellene elkészülni az oldalnak?",                   opts:["ASAP — minél hamarabb","2–4 héten belül","1–2 hónapon belül","Nincs sürgős határidő"]},
+  {id:"q34",s:"tech",  t:"radio",    q:"Mi a tervezett büdzsé a weboldalra?",                     opts:["100 000 Ft alatt","100 000 – 300 000 Ft","300 000 – 700 000 Ft","700 000 Ft felett","Még nem tudom / egyeztetés alapján"]},
+  {id:"q35",s:"tech",  t:"radio",    q:"Hány nyelven kellene az oldalnak működnie?",              opts:["Csak magyarul","Magyar + angol","Magyar + más nyelv","Több mint 2 nyelven"],other:null},
+  {id:"q36",s:"tech",  t:"area",     q:"Van-e bármi egyéb, amit fontosnak tart megemlíteni?",     opt:true,ph:"Különleges igények, ötletek, aggodalmak..."},
+];
+
+let cur=0, ans={};
+const TOTAL=QS.length;
+
+function sec(id){return SECS.find(s=>s.id===id)}
+
+// Build pills
+(function(){
+  const w=document.getElementById('pills');
+  document.getElementById('tn').textContent=TOTAL;
+  SECS.forEach(s=>{
+    const p=document.createElement('div');
+    p.className='pill';p.id='pill-'+s.id;p.textContent=s.lbl;
+    w.appendChild(p);
+  });
+})();
+
+// Build questions
+(function(){
+  const w=document.getElementById('qwrap');
+  QS.forEach((q,i)=>{
+    const s=sec(q.s);
+    const card=document.createElement('div');
+    card.className='qcard'+(i===0?' active':'');
+    card.id='qc'+i;
+
+    const optTxt=q.opt?'<span style="color:var(--text3);font-size:13px;font-weight:300;font-style:italic"> — opcionális</span>':'';
+    let h=`<div class="q-meta">
+      <div class="sec-tag" style="background:${s.tb};border-color:${s.tbr};color:${s.tc}">${s.lbl}</div>
+      <div class="q-num">${i+1} / ${TOTAL}</div>
+    </div>
+    <div class="q-text">${q.q}${optTxt}</div>`;
+
+    if(q.help) h+=`<div class="q-helper">${q.help}</div>`;
+    if(q.hint) h+=`<div class="opt-lbl">${q.hint}</div>`;
+
+    if(q.t==='radio'||q.t==='multi'){
+      const cls='opt'+(q.t==='multi'?' multi':'');
+      h+=`<div class="opts" id="o${i}">`;
+      q.opts.forEach((o,oi)=>{
+        h+=`<div class="${cls}" data-i="${i}" data-o="${oi}" onclick="pick(${i},${oi},${q.t==='multi'})">
+          <div class="ico"></div><div class="opt-text">${o}</div></div>`;
+      });
+      h+=`</div>`;
+      if(q.other!==undefined&&q.other!==null){
+        h+=`<div class="other-wrap" id="ow${i}"><input class="other-input" id="oi${i}" placeholder="Kérem írja be..." oninput="updNav(${i})"></div>`;
+      }
+      if(q.t==='multi') h+=`<div class="multi-hint">Több lehetőség is kiválasztható</div>`;
+    } else {
+      const tag=q.t==='area'?'textarea':'input';
+      const cls=q.t==='area'?'tarea':'tinput';
+      const more=q.t==='area'?'':' type="text"';
+      h+=`<${tag}${more} class="${cls}" id="ti${i}" placeholder="${q.ph||''}" oninput="updNav(${i})"${q.t==='text'?' onkeydown="if(event.key===\'Enter\'){goNext('+i+');}"':''} style="display:block"></${tag}>`;
+    }
+
+    h+=`<div class="nav">`;
+    if(i>0) h+=`<button class="btn-back" onclick="goBack()">&#8592; Vissza</button>`;
+    const dis=(q.opt||q.t==='radio'||q.t==='multi')?'':'disabled';
+    h+=`<button class="btn-next" id="bn${i}" onclick="goNext(${i})" ${dis}>
+      ${i===TOTAL-1?'Befejezés':'Következő'}
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5h10M8.5 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button></div>`;
+
+    card.innerHTML=h;
+    w.appendChild(card);
+  });
+})();
+
+function pick(qi,oi,multi){
+  const q=QS[qi];
+  const opts=document.querySelectorAll('#o'+qi+' .opt');
+  if(!multi){
+    opts.forEach(o=>o.classList.remove('sel'));
+    opts[oi].classList.add('sel');
+    ans[q.id]=[q.opts[oi]];
+  } else {
+    opts[oi].classList.toggle('sel');
+    const sel=[];
+    opts.forEach((o,i)=>{if(o.classList.contains('sel'))sel.push(q.opts[i]);});
+    ans[q.id]=sel;
+  }
+  const ow=document.getElementById('ow'+qi);
+  if(ow){
+    const isOth=ans[q.id]&&ans[q.id].includes(q.other);
+    ow.className='other-wrap'+(isOth?' show':'');
+  }
+  updNav(qi);
+  if(!multi){
+    setTimeout(()=>{
+      const b=document.getElementById('bn'+qi);
+      if(b&&!b.disabled)b.click();
+    },280);
+  }
+}
+
+function updNav(qi){
+  const q=QS[qi];
+  const b=document.getElementById('bn'+qi);
+  if(!b)return;
+  if(q.opt){b.disabled=false;return;}
+  if(q.t==='radio'||q.t==='multi'){
+    b.disabled=!ans[q.id]||ans[q.id].length===0;
+  } else {
+    const el=document.getElementById('ti'+qi);
+    b.disabled=!el||el.value.trim()==='';
+  }
+}
+
+function goNext(qi){
+  const q=QS[qi];
+  if(q.t==='text'||q.t==='area'){
+    const el=document.getElementById('ti'+qi);
+    ans[q.id]=el?el.value.trim():'';
+  }
+  const oi=document.getElementById('oi'+qi);
+  if(oi&&oi.value.trim()) ans[q.id+'_oth']=oi.value.trim();
+  if(qi>=TOTAL-1){showSum();return;}
+  document.getElementById('qc'+qi).classList.remove('active');
+  cur=qi+1;
+  const nc=document.getElementById('qc'+cur);
+  nc.classList.add('active');
+  nc.style.animation='none';
+  requestAnimationFrame(()=>{nc.style.animation='';});
+  updProg();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goBack(){
+  if(cur<=0)return;
+  document.getElementById('qc'+cur).classList.remove('active');
+  cur--;
+  document.getElementById('qc'+cur).classList.add('active');
+  updProg();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updProg(){
+  const pct=Math.round((cur/TOTAL)*100);
+  document.getElementById('bar').style.width=pct+'%';
+  document.getElementById('cn').textContent=cur+1;
+  const cs=QS[cur].s;
+  const di=SECS.findIndex(s=>s.id===cs);
+  SECS.forEach((s,i)=>{
+    const p=document.getElementById('pill-'+s.id);
+    p.className='pill';
+    if(i<di)p.classList.add('done');
+    else if(i===di)p.classList.add('active');
+  });
+}
+
+function showSum(){
+  document.getElementById('qwrap').style.display='none';
+  document.getElementById('prog-wrap').style.display='none';
+  const scr=document.getElementById('sum-screen');
+  scr.style.display='block';
+
+  let h=`<div class="sum-hero">
+    <div class="sum-check"><svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M6 15l7 7 11-11" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h2>Köszönjük a válaszokat!</h2>
+    <p>Az összesítőt töltse le és juttassa el hozzánk.</p>
+  </div>
+  <div class="sum-secs">`;
+
+  SECS.forEach(s=>{
+    const qs=QS.filter(q=>q.s===s.id);
+    h+=`<div class="sum-sec">
+      <div class="sum-sec-hdr"><div class="sum-dot" style="background:${s.c}"></div>${s.lbl}</div>`;
+    qs.forEach(q=>{
+      const a=ans[q.id];
+      let aH='';
+      if(!a||a===''||(Array.isArray(a)&&a.length===0)){
+        aH=`<span class="sum-a empty">Nem megadott</span>`;
+      } else if(Array.isArray(a)){
+        const oth=ans[q.id+'_oth'];
+        let items=[...a];
+        if(oth&&items.includes(q.other))items=items.map(x=>x===q.other?x+': '+oth:x);
+        aH=`<span class="sum-a">${items.join(' &bull; ')}</span>`;
+      } else {
+        aH=`<span class="sum-a">${a}</span>`;
+      }
+      h+=`<div class="sum-row"><div class="sum-q">${q.q}</div>${aH}</div>`;
+    });
+    h+=`</div>`;
+  });
+
+  h+=`</div>
+  <div class="export-box">
+    <h3>Töltse le az összesítőt</h3>
+    <p>A JSON fájlt töltse fel közvetlenül Claude-nak, és az összes válasz alapján azonnal elkészíti a weboldal tervét, ajánlatot és tartalmat.</p>
+    <div class="export-btns">
+      <button class="btn-exp" onclick="dlJSON()">JSON letöltése</button>
+      <button class="btn-exp" onclick="dlTXT()">Szöveges összesítő</button>
+      <button class="btn-exp sec" onclick="cpJSON()">Vágólapra másolás</button>
+    </div>
+  </div>`;
+
+  scr.innerHTML=h;
+}
+
+function buildData(){
+  const d={kitoltes_datuma:new Date().toLocaleString('hu-HU'),valaszok:{}};
+  SECS.forEach(s=>{
+    d.valaszok[s.lbl]={};
+    QS.filter(q=>q.s===s.id).forEach(q=>{
+      let v=ans[q.id]??null;
+      const oth=ans[q.id+'_oth'];
+      if(Array.isArray(v)&&oth&&v.includes(q.other))v=v.map(x=>x===q.other?x+': '+oth:x);
+      d.valaszok[s.lbl][q.q]=v;
+    });
+  });
+  return d;
+}
+
+function dlJSON(){
+  const b=new Blob([JSON.stringify(buildData(),null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');
+  a.href=u;a.download='weboldal_kerdoiv_valaszok.json';a.click();URL.revokeObjectURL(u);
+}
+
+function dlTXT(){
+  const d=buildData();
+  let t='WEBOLDAL FEJLESZTÉSI KÉRDŐÍV — ÖSSZESÍTŐ\n';
+  t+='Kitöltés: '+d.kitoltes_datuma+'\n'+'='.repeat(56)+'\n\n';
+  Object.entries(d.valaszok).forEach(([s,qs])=>{
+    t+='[ '+s.toUpperCase()+' ]\n'+'-'.repeat(40)+'\n';
+    Object.entries(qs).forEach(([q,a])=>{
+      t+='K: '+q+'\nV: '+(a?(Array.isArray(a)?a.join(', '):a):'Nem megadott')+'\n\n';
+    });
+    t+='\n';
+  });
+  const b=new Blob([t],{type:'text/plain;charset=utf-8'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');
+  a.href=u;a.download='weboldal_kerdoiv_osszesito.txt';a.click();URL.revokeObjectURL(u);
+}
+
+function cpJSON(){
+  navigator.clipboard.writeText(JSON.stringify(buildData(),null,2)).then(()=>{
+    const t=document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2500);
+  });
+}
+
+updProg();
+</script>
+</body>
+</html>
