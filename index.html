@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weboldal fejlesztési kérdőív</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('CWH6BsjUo3pG4ws3A');</script>
 <style>
 :root{--bg:#0d0d0f;--surface:#141416;--surface2:#1c1c1f;--border:rgba(255,255,255,0.08);--border-h:rgba(255,255,255,0.18);--accent:#6ee7b7;--accent2:#3b82f6;--accent-dim:rgba(110,231,183,0.1);--text:#f0f0f0;--text2:#9ca3af;--text3:#6b7280;--r:16px;--rs:10px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -368,13 +370,15 @@ function showSum(){
 
   h+=`</div>
   <div class="export-box">
-    <h3>Töltse le az összesítőt</h3>
-    <p>A JSON fájlt töltse fel közvetlenül Claude-nak, és az összes válasz alapján azonnal elkészíti a weboldal tervét, ajánlatot és tartalmat.</p>
+    <h3>Válaszok beküldése</h3>
+    <p>Kattintson a gombra — a kitöltött válaszok automatikusan elküldésre kerülnek, nem kell semmit letölteni.</p>
     <div class="export-btns">
-      <button class="btn-exp" onclick="dlJSON()">JSON letöltése</button>
-      <button class="btn-exp" onclick="dlTXT()">Szöveges összesítő</button>
-      <button class="btn-exp sec" onclick="cpJSON()">Vágólapra másolás</button>
+      <button class="btn-exp" id="send-btn" onclick="sendEmail()">
+        <span id="send-label">Beküldés</span>
+      </button>
+      <button class="btn-exp sec" onclick="dlTXT()">Szöveges mentés</button>
     </div>
+    <div id="send-status" style="margin-top:14px;font-size:13px;display:none"></div>
   </div>`;
 
   scr.innerHTML=h;
@@ -401,6 +405,13 @@ function dlJSON(){
 }
 
 function dlTXT(){
+  const t=buildTXT();
+  const b=new Blob([t],{type:'text/plain;charset=utf-8'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');
+  a.href=u;a.download='weboldal_kerdoiv_osszesito.txt';a.click();URL.revokeObjectURL(u);
+}
+
+function buildTXT(){
   const d=buildData();
   let t='WEBOLDAL FEJLESZTÉSI KÉRDŐÍV — ÖSSZESÍTŐ\n';
   t+='Kitöltés: '+d.kitoltes_datuma+'\n'+'='.repeat(56)+'\n\n';
@@ -411,17 +422,43 @@ function dlTXT(){
     });
     t+='\n';
   });
-  const b=new Blob([t],{type:'text/plain;charset=utf-8'});
-  const u=URL.createObjectURL(b);const a=document.createElement('a');
-  a.href=u;a.download='weboldal_kerdoiv_osszesito.txt';a.click();URL.revokeObjectURL(u);
+  return t;
 }
 
-function cpJSON(){
-  navigator.clipboard.writeText(JSON.stringify(buildData(),null,2)).then(()=>{
-    const t=document.getElementById('toast');
-    t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'),2500);
-  });
+async function sendEmail(){
+  const btn=document.getElementById('send-btn');
+  const label=document.getElementById('send-label');
+  const status=document.getElementById('send-status');
+  btn.disabled=true;
+  label.textContent='Küldés folyamatban...';
+
+  const d=buildData();
+  const txt=buildTXT();
+  const json=JSON.stringify(d,null,2);
+
+  try {
+    await emailjs.send('service_hoimwyh','template_yrbzwvb',{
+      to_email:'ctunde.hu@gmail.com',
+      from_name: ans['q1'] || 'Ismeretlen kitöltő',
+      kitoltes_datuma: d.kitoltes_datuma,
+      szoveges_osszesito: txt.substring(0,8000),
+      json_tartalom: json.substring(0,8000),
+    });
+
+    label.textContent='Elküldve! ✓';
+    btn.style.background='#059669';
+    status.style.display='block';
+    status.style.color='#6ee7b7';
+    status.innerHTML='&#10003; A válaszok sikeresen elküldve a <strong>ctunde.hu@gmail.com</strong> címre!';
+  } catch(e) {
+    btn.disabled=false;
+    label.textContent='Beküldés';
+    status.style.display='block';
+    status.style.color='#fbbf24';
+    const subject=encodeURIComponent('Weboldal kérdőív – '+(ans['q1']||'Névtelen'));
+    const body=encodeURIComponent(txt.substring(0,2000));
+    status.innerHTML='Automatikus küldés sikertelen. <a href="mailto:ctunde.hu@gmail.com?subject='+subject+'&body='+body+'" style="color:#6ee7b7">Kattints ide az email megnyitásához</a>';
+  }
 }
 
 updProg();
