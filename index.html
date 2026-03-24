@@ -426,7 +426,7 @@ function buildTXT(){
 
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzDFqxy3c5kkfzg2C3-NErh4yT2-2Sf7V7z9yqMlr8OoJcjW7N_SyxV1e6vMhKdBbeQOg/exec';
 
-async function sendEmail(){
+function sendEmail(){
   const btn=document.getElementById('send-btn');
   const label=document.getElementById('send-label');
   const status=document.getElementById('send-status');
@@ -435,28 +435,68 @@ async function sendEmail(){
 
   const d=buildData();
 
-  try {
-    const encoded = encodeURIComponent(JSON.stringify(d));
-    await fetch(SHEETS_URL + '?data=' + encoded, {
-      method: 'GET',
-      mode: 'no-cors'
-    });
+  // JSONP technika - egyetlen megbizható modszer kulso HTML-bol
+  const callbackName = 'callback_' + Date.now();
+  let done = false;
 
-    label.textContent='Beküldve! ✓';
-    btn.style.background='#059669';
-    status.style.display='block';
-    status.style.color='#6ee7b7';
-    status.innerHTML='✓ A válaszok sikeresen beküldve! Az adatok bekerültek a Google Sheets táblázatba, és email értesítő is elment.';
+  window[callbackName] = function(response) {
+    done = true;
+    delete window[callbackName];
+    if(script.parentNode) script.parentNode.removeChild(script);
 
-  } catch(e) {
+    if(response && response.status === 'ok') {
+      label.textContent='Beküldve! ✓';
+      btn.style.background='#059669';
+      status.style.display='block';
+      status.style.color='#6ee7b7';
+      status.innerHTML='✓ A válaszok sikeresen beküldve! Hamarosan felvesszük Önnel a kapcsolatot.';
+    } else {
+      fallback();
+    }
+  };
+
+  // Adatot darabokra osztjuk hogy URL ne legyen tul hosszu
+  const jsonStr = JSON.stringify(d);
+  const chunkSize = 1500;
+  const chunks = [];
+  for(let i=0; i<jsonStr.length; i+=chunkSize) {
+    chunks.push(jsonStr.substring(i, i+chunkSize));
+  }
+  const totalChunks = chunks.length;
+  const sessionId = Date.now().toString();
+
+  // Ha csak 1 chunk, egyszeruen kuldjuk
+  const params = new URLSearchParams({
+    callback: callbackName,
+    sessionId: sessionId,
+    chunk: '0',
+    totalChunks: totalChunks.toString(),
+    data: chunks[0] || jsonStr
+  });
+
+  const script = document.createElement('script');
+  script.src = SHEETS_URL + '?' + params.toString();
+  script.onerror = function() {
+    if(!done) fallback();
+  };
+
+  setTimeout(function() {
+    if(!done) fallback();
+  }, 10000);
+
+  document.head.appendChild(script);
+
+  function fallback() {
+    done = true;
+    delete window[callbackName];
     btn.disabled=false;
     label.textContent='Beküldés';
     status.style.display='block';
     status.style.color='#fbbf24';
     const txt=buildTXT();
     const subject=encodeURIComponent('Weboldal kérdőív – '+(ans['q1']||'Névtelen'));
-    const body=encodeURIComponent(txt.substring(0,2000));
-    status.innerHTML='Hálózati hiba. <a href="mailto:ctunde.hu@gmail.com?subject='+subject+'&body='+body+'" style="color:#6ee7b7">Kattints ide az email megnyitásához</a>';
+    const body=encodeURIComponent(txt.substring(0,1800));
+    status.innerHTML='Automatikus küldés nem sikerült. <a href="mailto:ctunde.hu@gmail.com?subject='+subject+'&body='+body+'" style="color:#6ee7b7;font-weight:600">Kattints ide → megnyílik az email program a kitöltött válaszokkal</a>';
   }
 }
 
