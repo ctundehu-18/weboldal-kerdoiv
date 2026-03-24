@@ -436,11 +436,10 @@ async function sendEmail(){
   const d=buildData();
 
   try {
-    await fetch(SHEETS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(d)
+    const encoded = encodeURIComponent(JSON.stringify(d));
+    await fetch(SHEETS_URL + '?data=' + encoded, {
+      method: 'GET',
+      mode: 'no-cors'
     });
 
     label.textContent='Beküldve! ✓';
