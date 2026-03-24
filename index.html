@@ -424,9 +424,9 @@ function buildTXT(){
   return t;
 }
 
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxMa1HuHlzE6ffHU1QpXx4JecttFNLvzOxsoGCmsktjODrc0YwsHIdSi7WdKjqXKeq7DQ/exec';
+const FORMSPREE_URL = 'https://formspree.io/f/mkoqdqoe';
 
-function sendEmail(){
+async function sendEmail(){
   const btn=document.getElementById('send-btn');
   const label=document.getElementById('send-label');
   const status=document.getElementById('send-status');
@@ -434,69 +434,48 @@ function sendEmail(){
   label.textContent='Küldés folyamatban...';
 
   const d=buildData();
+  const txt=buildTXT();
 
-  // JSONP technika - egyetlen megbizható modszer kulso HTML-bol
-  const callbackName = 'callback_' + Date.now();
-  let done = false;
+  // Formspree-nek küldendő adatok
+  const formData = {
+    _subject: 'Új weboldal kérdőív: ' + (ans['q1'] || 'Ismeretlen kitöltő'),
+    ceg_neve: ans['q1'] || 'Ismeretlen',
+    kitoltes_datuma: d.kitoltes_datuma,
+    osszesito: txt,
+    json_adatok: JSON.stringify(d, null, 2)
+  };
 
-  window[callbackName] = function(response) {
-    done = true;
-    delete window[callbackName];
-    if(script.parentNode) script.parentNode.removeChild(script);
+  try {
+    const res = await fetch(FORMSPREE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
 
-    if(response && response.status === 'ok') {
-      label.textContent='Beküldve! ✓';
-      btn.style.background='#059669';
-      status.style.display='block';
-      status.style.color='#6ee7b7';
-      status.innerHTML='✓ A válaszok sikeresen beküldve! Hamarosan felvesszük Önnel a kapcsolatot.';
+    const result = await res.json();
+
+    if (res.ok) {
+      label.textContent = 'Beküldve! ✓';
+      btn.style.background = '#059669';
+      status.style.display = 'block';
+      status.style.color = '#6ee7b7';
+      status.innerHTML = '✓ A válaszok sikeresen elküldve! Hamarosan felvesszük Önnel a kapcsolatot.';
     } else {
-      fallback();
+      throw new Error(result.error || 'Formspree hiba');
     }
-  };
 
-  // Adatot darabokra osztjuk hogy URL ne legyen tul hosszu
-  const jsonStr = JSON.stringify(d);
-  const chunkSize = 1500;
-  const chunks = [];
-  for(let i=0; i<jsonStr.length; i+=chunkSize) {
-    chunks.push(jsonStr.substring(i, i+chunkSize));
-  }
-  const totalChunks = chunks.length;
-  const sessionId = Date.now().toString();
-
-  // Ha csak 1 chunk, egyszeruen kuldjuk
-  const params = new URLSearchParams({
-    callback: callbackName,
-    sessionId: sessionId,
-    chunk: '0',
-    totalChunks: totalChunks.toString(),
-    data: chunks[0] || jsonStr
-  });
-
-  const script = document.createElement('script');
-  script.src = SHEETS_URL + '?' + params.toString();
-  script.onerror = function() {
-    if(!done) fallback();
-  };
-
-  setTimeout(function() {
-    if(!done) fallback();
-  }, 10000);
-
-  document.head.appendChild(script);
-
-  function fallback() {
-    done = true;
-    delete window[callbackName];
-    btn.disabled=false;
-    label.textContent='Beküldés';
-    status.style.display='block';
-    status.style.color='#fbbf24';
-    const txt=buildTXT();
-    const subject=encodeURIComponent('Weboldal kérdőív – '+(ans['q1']||'Névtelen'));
-    const body=encodeURIComponent(txt.substring(0,1800));
-    status.innerHTML='Automatikus küldés nem sikerült. <a href="mailto:ctunde.hu@gmail.com?subject='+subject+'&body='+body+'" style="color:#6ee7b7;font-weight:600">Kattints ide → megnyílik az email program a kitöltött válaszokkal</a>';
+  } catch(e) {
+    console.error('Küldési hiba:', e);
+    btn.disabled = false;
+    label.textContent = 'Beküldés';
+    status.style.display = 'block';
+    status.style.color = '#fbbf24';
+    const subject = encodeURIComponent('Weboldal kérdőív – ' + (ans['q1'] || 'Névtelen'));
+    const body = encodeURIComponent(txt.substring(0, 1800));
+    status.innerHTML = 'Automatikus küldés nem sikerült. <a href="mailto:ctunde.hu@gmail.com?subject=' + subject + '&body=' + body + '" style="color:#6ee7b7;font-weight:600">Kattints ide → megnyílik az email program a kitöltött válaszokkal</a>';
   }
 }
 
